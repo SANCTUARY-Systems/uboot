@@ -18,6 +18,8 @@
 #include <micrel.h>
 #include <miiphy.h>
 #include <netdev.h>
+#include <dm/device.h>
+#include <dm/uclass.h>
 
 #include "../common/tdx-cfg-block.h"
 
@@ -74,6 +76,17 @@ int board_phy_config(struct phy_device *phydev)
 int board_init(void)
 {
 	int ret = 0;
+
+	if (IS_ENABLED(CONFIG_FSL_CAAM)) {
+		struct udevice *dev;
+
+		ret = uclass_get_device_by_driver(
+		            UCLASS_MISC, DM_DRIVER_GET(caam_jr), &dev);
+		if (ret) {
+			printf("Failed to initialize caam_jr: %d\n", ret);
+			return ret;
+		}
+	}
 
 	if (IS_ENABLED(CONFIG_FEC_MXC))
 		setup_fec();
